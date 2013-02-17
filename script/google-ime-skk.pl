@@ -9,36 +9,68 @@ use Encode;
 use JSON;
 use URI;
 
-our $GOOGLE_IME_URL = 'http://www.google.com/transliterate';
+use constant {
+    SERVER_ERROR     => '0',
+    SERVER_FOUND     => '1',
+    SERVER_NOT_FOUND => '4',
+    SERVER_FULL      => '9',
+};
 
 my $cache = Cache::Memory::Simple->new();
 my $expire = 60 * 60 * 24;
 
 my $json = JSON->new->utf8(1)->relaxed(1);
 
+my $_uri = URI->new('http://www.google.com/transliterate');
+sub _uri {
+    my $text = shift;
+    my $uri = $_uri->clone;
+    $uri->query_form(
+        langpair => 'ja-Hira|ja',
+        text     => encode_utf8($text),
+    );
+    return $uri;
+}
+
 my $skkserv = AnyEvent::SKKServ->new(
     port => 55100,
     on_request => sub {
         my ($hdl, $req) = @_;
         $req = decode('euc-jp', $req);
-        $req =~ s/([a-z])$/,$1/; # 書く => かk
+
+        my $server_found = sub {
+            my $val = shift;
+            $hdl->push_write(SERVER_FOUND . "/$val\n");
+        };
+        my $server_not_found = sub {
+            $hdl->push_write(SERVER_NOT_FOUND . "\n");
+        };
+
+        # okuri-ari entry
+        if ($req =~ /([a-z])$/) {
+            $server_not_found->();
+        }
 
         if (my $val = $cache->get($req)) {
-            $hdl->push_write("1/$val\n");
+            if ($val eq '*') {
+                $server_not_found->();
+            } else {
+                $server_found->($val);
+            }
         } else {
-            my $uri = URI->new($GOOGLE_IME_URL);
-            $uri->query_form(
-                langpair => 'ja-Hira|ja',
-                text     => encode_utf8($req),
-            );
-            http_get $uri, timeout => 1, sub {
+            http_get _uri($req), timeout => 1, sub {
                 my $res = $json->decode($_[0]);
-                my $val = join '/', @{$res->[0][1]};
-                $val = encode('euc-jp', $val);
+                if (@$res == 1) {
+                    my $val = join '/', @{$res->[0][1]};
+                    $val = encode('euc-jp', $val);
+                    $server_found->($val);
 
-                $hdl->push_write("1/$val\n");
+                    $cache->set($req => $val, $expire);
+                } else {
+                    $server_not_found->();
 
-                $cache->set($req => $val, $expire);
+                    $cache->set($req => '*', $expire);
+                }
             };
         }
     },
