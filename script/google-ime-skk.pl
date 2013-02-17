@@ -49,6 +49,7 @@ my $skkserv = AnyEvent::SKKServ->new(
         # okuri-ari entry
         if ($req =~ /([a-z])$/) {
             $server_not_found->();
+            return;
         }
 
         if (my $val = $cache->get($req)) {
