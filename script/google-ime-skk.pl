@@ -27,7 +27,7 @@ sub _uri {
     my $uri = $_uri->clone;
     $uri->query_form(
         langpair => 'ja-Hira|ja',
-        text     => encode_utf8($text),
+        text     => encode_utf8($text . ','), # prevent separating the clause
     );
     return $uri;
 }
@@ -49,33 +49,23 @@ my $skkserv = AnyEvent::SKKServ->new(
             $hdl->push_write(SERVER_ERROR . "\n");
         };
 
-        # okuri-ari entry
+        # ignore okuri-ari entry
         if ($req =~ /([a-z])$/) {
             $server_not_found->();
             return;
         }
 
         if (my $val = $cache->get($req)) {
-            if ($val eq '*') {
-                $server_not_found->();
-            } else {
-                $server_found->($val);
-            }
+            $server_found->($val);
         } else {
             http_get _uri($req), timeout => 1, sub {
                 if ($_[1]->{Status} == 200) {
                     my $res = $json->decode($_[0]);
-                    if (@$res == 1) {
-                        my $val = join '/', @{$res->[0][1]};
-                        $val = encode('euc-jp', $val);
-                        $server_found->($val);
+                    my $val = join '/', @{$res->[0][1]};
+                    $val = encode('euc-jp', $val);
+                    $server_found->($val);
 
-                        $cache->set($req => $val, $expire);
-                    } else {
-                        $server_not_found->();
-
-                        $cache->set($req => '*', $expire);
-                    }
+                    $cache->set($req => $val, $expire);
                 } else {
                     $server_error->();
                 }
