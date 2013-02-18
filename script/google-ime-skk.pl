@@ -45,6 +45,9 @@ my $skkserv = AnyEvent::SKKServ->new(
         my $server_not_found = sub {
             $hdl->push_write(SERVER_NOT_FOUND . "\n");
         };
+        my $server_error = sub {
+            $hdl->push_write(SERVER_ERROR . "\n");
+        };
 
         # okuri-ari entry
         if ($req =~ /([a-z])$/) {
@@ -60,17 +63,21 @@ my $skkserv = AnyEvent::SKKServ->new(
             }
         } else {
             http_get _uri($req), timeout => 1, sub {
-                my $res = $json->decode($_[0]);
-                if (@$res == 1) {
-                    my $val = join '/', @{$res->[0][1]};
-                    $val = encode('euc-jp', $val);
-                    $server_found->($val);
+                if ($_[1]->{Status} == 200) {
+                    my $res = $json->decode($_[0]);
+                    if (@$res == 1) {
+                        my $val = join '/', @{$res->[0][1]};
+                        $val = encode('euc-jp', $val);
+                        $server_found->($val);
 
-                    $cache->set($req => $val, $expire);
+                        $cache->set($req => $val, $expire);
+                    } else {
+                        $server_not_found->();
+
+                        $cache->set($req => '*', $expire);
+                    }
                 } else {
-                    $server_not_found->();
-
-                    $cache->set($req => '*', $expire);
+                    $server_error->();
                 }
             };
         }
