@@ -40,7 +40,7 @@ my $skkserv = AnyEvent::SKKServ->new(
 
         my $server_found = sub {
             my $val = shift;
-            $hdl->push_write(SERVER_FOUND . "/$val\n");
+            $hdl->push_write(SERVER_FOUND . "/$val/\n");
         };
         my $server_not_found = sub {
             $hdl->push_write(SERVER_NOT_FOUND . "\n");
