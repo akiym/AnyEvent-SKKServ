@@ -19,6 +19,7 @@ use constant {
 my $cache = Cache::Memory::Simple->new();
 my $expire = 60 * 60 * 24;
 
+my $enc = find_encoding('euc-jp');
 my $json = JSON->new->utf8(1)->relaxed(1);
 
 my $_uri = URI->new('http://www.google.com/transliterate');
@@ -36,7 +37,7 @@ my $skkserv = AnyEvent::SKKServ->new(
     port => 55100,
     on_request => sub {
         my ($hdl, $req) = @_;
-        $req = decode('euc-jp', $req);
+        $req = $enc->decode($req);
 
         my $server_found = sub {
             my $val = shift;
@@ -61,11 +62,21 @@ my $skkserv = AnyEvent::SKKServ->new(
             http_get _uri($req), timeout => 1, sub {
                 if ($_[1]->{Status} == 200) {
                     my $res = $json->decode($_[0]);
-                    my $val = join '/', @{$res->[0][1]};
-                    $val = encode('euc-jp', $val);
-                    $server_found->($val);
+                    my @words;
+                    for my $word (@{$res->[0][1]}) {
+                        # skip if the word can't convert to EUC-JP
+                        eval {
+                            push @words, $enc->encode($word, Encode::FB_CROAK);
+                        };
+                    }
+                    if (@words) {
+                        my $val = join '/', @words;
+                        $server_found->($val);
 
-                    $cache->set($req => $val, $expire);
+                        $cache->set($req => $val, $expire);
+                    } else {
+                        $server_not_found->();
+                    }
                 } else {
                     $server_error->();
                 }
