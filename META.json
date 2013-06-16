@@ -1,0 +1,72 @@
+{
+   "abstract" : "Lightweight skkserv implementation for AnyEvent",
+   "author" : [
+      "Takumi Akiyama <akiym@cpan.org>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Minilla/v0.5.3, CPAN::Meta::Converter version 2.130880",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "AnyEvent-SKKServ",
+   "no_index" : {
+      "directory" : [
+         "t",
+         "xt",
+         "inc",
+         "share",
+         "eg",
+         "examples",
+         "author"
+      ]
+   },
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "Test::More" : "0.98",
+            "Test::Requires" : "0"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "CPAN::Meta" : "0",
+            "CPAN::Meta::Prereqs" : "0",
+            "Module::Build" : "0.38"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "Test::CPAN::Meta" : "0",
+            "Test::MinimumVersion" : "0.10108",
+            "Test::Pod" : "1.41",
+            "Test::Spellunker" : "v0.2.7"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "AnyEvent" : "7.04",
+            "perl" : "5.008005"
+         }
+      }
+   },
+   "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/akiym/AnyEvent-SKKServ/issues"
+      },
+      "homepage" : "https://github.com/akiym/AnyEvent-SKKServ",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/akiym/AnyEvent-SKKServ.git",
+         "web" : "https://github.com/akiym/AnyEvent-SKKServ"
+      }
+   },
+   "version" : "0.01",
+   "x_contributors" : [
+      "Takumi Akiyama <t.akiym@gmail.com>"
+   ]
+}
