@@ -64,6 +64,7 @@ my $skkserv = AnyEvent::SKKServ->new(
                     my $res = $json->decode($_[0]);
                     my @words;
                     for my $word (@{$res->[0][1]}) {
+                        next if $word =~ /^[\p{Hiragana}\p{Katakana}]+$/;
                         # skip if the word can't convert to EUC-JP
                         eval {
                             push @words, $enc->encode($word, Encode::FB_CROAK);
