@@ -27,8 +27,7 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "Test::More" : "0.98",
-            "Test::Requires" : "0"
+            "Test::More" : "0.98"
          }
       },
       "configure" : {
@@ -50,6 +49,11 @@
          "requires" : {
             "AnyEvent" : "7.04",
             "perl" : "5.008005"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::TCP" : "2.00"
          }
       }
    },

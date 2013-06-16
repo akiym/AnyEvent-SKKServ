@@ -3,5 +3,8 @@ requires 'perl', '5.008005';
 
 on build => sub {
     requires 'Test::More', '0.98';
-    requires 'Test::Requires';
+};
+
+on test => sub {
+    requires 'Test::TCP', '2.00';
 };

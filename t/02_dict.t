@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use utf8;
 use Test::More;
-use Test::Requires 'Test::TCP';
+use Test::TCP;
 use AnyEvent;
 use AnyEvent::Handle;
 use AnyEvent::Socket;
